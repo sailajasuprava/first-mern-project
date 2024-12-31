@@ -3,6 +3,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 
 const authRouter = require("./routes/authRoutes");
+const { globalErrorHandler } = require("./controllers/errorController");
+const AppError = require("./utils/appError");
 
 const port = process.env.PORT || 3000;
 const DB = process.env.DB_URL;
@@ -19,6 +21,10 @@ mongoose
 
 app.use(express.json());
 app.use("/api/v1/auth", authRouter);
+app.all("*", (req, res, next) => {
+  next(new AppError(`This route ${req.originalUrl} doesn't exist.`, 404));
+});
+app.use(globalErrorHandler);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}...`);
