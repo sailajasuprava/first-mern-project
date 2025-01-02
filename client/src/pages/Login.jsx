@@ -1,10 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const URL = "http://localhost:8000/api/v1/auth/login";
 
 function Login() {
   const [user, setUser] = useState({
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
 
   const handleInput = (e) => {
     setUser({
@@ -15,7 +19,27 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(user);
+    try {
+      const res = await fetch(URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(user),
+      });
+
+      // const data = await res.json();
+
+      if (res.ok) {
+        setUser({
+          email: "",
+          password: "",
+        });
+        navigate("/");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -67,7 +91,7 @@ function Login() {
 
                 <br />
                 <button type="submit" className="btn btn-submit">
-                  Register Now
+                  Log in
                 </button>
               </form>
             </div>

@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const { globalErrorHandler } = require("./controllers/errorController");
 const AppError = require("./utils/appError");
@@ -9,7 +10,11 @@ const contactRouter = require("./routes/contactRoute");
 
 const port = process.env.PORT || 3000;
 const DB = process.env.DB_URL;
-
+const corsOptions = {
+  origin: " http://localhost:5173",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+};
 const app = express();
 
 mongoose
@@ -20,6 +25,7 @@ mongoose
   .then(() => console.log("DB connection successful!"))
   .catch((err) => console.log("ERROR", err));
 
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/contact", contactRouter);
