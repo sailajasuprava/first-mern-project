@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const URL = "http://localhost:8000/api/v1/contact";
+
 function Contact() {
   const [contact, setContact] = useState({
     fullname: "",
@@ -16,7 +18,28 @@ function Contact() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(contact);
+    try {
+      const res = await fetch(URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(contact),
+      });
+
+      const data = await res.json();
+      console.log(data);
+
+      if (res.ok) {
+        setContact({
+          fullname: "",
+          email: "",
+          message: "",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

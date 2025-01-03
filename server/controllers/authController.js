@@ -1,3 +1,4 @@
+const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/userModel");
@@ -7,19 +8,6 @@ const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
-
-const sendToken = (res, token) => {
-  const cookieOptions = {
-    expires: new Date(
-      // eslint-disable-next-line prettier/prettier
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-  };
-  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
-
-  res.cookie("jwt", token, cookieOptions);
-};
 
 const signUp = async (req, res, next) => {
   try {
@@ -32,7 +20,6 @@ const signUp = async (req, res, next) => {
     });
 
     const token = generateToken(newUser._id);
-    sendToken(res, token);
 
     res.status(201).json({
       status: "success",
@@ -58,7 +45,6 @@ const logIn = async (req, res, next) => {
     }
 
     const token = generateToken(user._id);
-    sendToken(res, token);
 
     res.status(200).json({
       status: "success",
@@ -70,4 +56,27 @@ const logIn = async (req, res, next) => {
   }
 };
 
-module.exports = { signUp, logIn };
+const protect = async (req, res, next) => {
+  try {
+    const { authorization } = req.headers;
+
+    if (!authorization || !authorization.startsWith("Bearer")) {
+      return next(new AppError("You are not logged in"), 401);
+    }
+
+    const token = authorization.split(" ")[1];
+    const payload = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    const user = await User.findById(payload.id);
+
+    if (!user) {
+      return next(new AppError("User doesn't exist."), 401);
+    }
+
+    req.user = user;
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { signUp, logIn, protect };

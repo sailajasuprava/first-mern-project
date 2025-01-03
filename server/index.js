@@ -7,6 +7,7 @@ const { globalErrorHandler } = require("./controllers/errorController");
 const AppError = require("./utils/appError");
 const authRouter = require("./routes/authRoutes");
 const contactRouter = require("./routes/contactRoute");
+const serviceRouter = require("./routes/serviceRoute");
 
 const port = process.env.PORT || 3000;
 const DB = process.env.DB_URL;
@@ -29,6 +30,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/contact", contactRouter);
+app.use("/api/v1/services", serviceRouter);
 app.all("*", (req, res, next) => {
   next(new AppError(`This route ${req.originalUrl} doesn't exist.`, 404));
 });
