@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/authContext";
 
 const URL = "http://localhost:8000/api/v1/auth/login";
 
@@ -9,6 +10,7 @@ function Login() {
     password: "",
   });
   const navigate = useNavigate();
+  const { setToken } = useAuth();
 
   const handleInput = (e) => {
     setUser({
@@ -28,9 +30,11 @@ function Login() {
         body: JSON.stringify(user),
       });
 
-      // const data = await res.json();
+      const data = await res.json();
 
       if (res.ok) {
+        localStorage.setItem("merntoken", data.token);
+        setToken(data.token);
         setUser({
           email: "",
           password: "",
